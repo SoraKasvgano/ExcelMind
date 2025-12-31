@@ -27,6 +27,154 @@
             --sidebar-width: 300px;
         }
 
+        /* 亮色主题 */
+        [data-theme="light"] {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --bg-hover: #e8eaed;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a68;
+            --text-muted: #8e8ea0;
+            --border: #e1e4e8;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --accent: #5a67d8;
+            --accent-hover: #4c51bf;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --error: #f56565;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* 亮色主题下的特殊样式覆盖 */
+        [data-theme="light"] .message.assistant {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 1px solid #667eea30;
+        }
+
+        [data-theme="light"] .message.user {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+
+        [data-theme="light"] .thinking-block {
+            background: #fef3cd;
+            border-color: #ffc107;
+        }
+
+        [data-theme="light"] .thinking-header {
+            color: #856404;
+        }
+
+        [data-theme="light"] .thinking-content {
+            color: #664d03;
+        }
+
+        [data-theme="light"] .tool-block {
+            background: #e8f4fd;
+            border-color: #90cdf4;
+        }
+
+        [data-theme="light"] .tool-header {
+            color: #2b6cb0;
+        }
+
+        [data-theme="light"] .tool-name {
+            background: #3182ce;
+            color: white;
+        }
+
+        [data-theme="light"] .tool-result.success {
+            background: #c6f6d5;
+            border-color: #48bb78;
+            color: #22543d;
+        }
+
+        [data-theme="light"] .tool-result.error {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #742a2a;
+        }
+
+        [data-theme="light"] .upload-zone {
+            background: #f8fafc;
+            border-color: #cbd5e0;
+        }
+
+        [data-theme="light"] .upload-zone:hover,
+        [data-theme="light"] .upload-zone.dragover {
+            background: #edf2f7;
+            border-color: var(--accent);
+        }
+
+        [data-theme="light"] .table-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+
+        [data-theme="light"] .table-item:hover {
+            background: #f7fafc;
+            border-color: #a0aec0;
+        }
+
+        [data-theme="light"] .table-item.active {
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            border-color: var(--accent);
+        }
+
+        [data-theme="light"] .chat-input {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        [data-theme="light"] .chat-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(90, 103, 216, 0.15);
+        }
+
+        [data-theme="light"] .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        [data-theme="light"] .knowledge-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+
+        [data-theme="light"] .knowledge-item:hover {
+            background: #f7fafc;
+        }
+
+        [data-theme="light"] .btn-join {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        [data-theme="light"] .modal {
+            background: #ffffff;
+        }
+
+        [data-theme="light"] .active-table-indicator {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* 主题切换按钮 */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--bg-hover);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -1423,7 +1571,10 @@
     <!-- Left Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h1>ExcelMind</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>ExcelMind</h1>
+                <button id="theme-toggle" class="theme-toggle-btn" title="切换主题">🌙</button>
+            </div>
             <div class="subtitle">Excel 智能数据问答助手</div>
         </div>
 
@@ -1646,6 +1797,41 @@
         let selectedTableIds = [];
         let table1Columns = [];
         let table2Columns = [];
+
+        // 主题切换相关
+        const themeToggle = document.getElementById('theme-toggle');
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+        const chartInstances = []; // 存储所有图表实例
+
+        // 初始化主题
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcon();
+
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            updateThemeIcon();
+            updateChartsTheme();
+        });
+
+        function updateThemeIcon() {
+            themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function updateChartsTheme() {
+            const theme = currentTheme === 'light' ? null : 'dark';
+            chartInstances.forEach(item => {
+                if (item.chart && !item.chart.isDisposed()) {
+                    const option = item.chart.getOption();
+                    item.chart.dispose();
+                    const newChart = echarts.init(item.container, theme);
+                    newChart.setOption(option);
+                    item.chart = newChart;
+                }
+            });
+        }
+
 
         // Upload handlers
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -2405,8 +2591,11 @@
                 setTimeout(() => {
                     const container = document.getElementById(chartId);
                     if (container && typeof echarts !== 'undefined') {
-                        const chart = echarts.init(container, 'dark');
+                        const theme = currentTheme === 'light' ? null : 'dark';
+                        const chart = echarts.init(container, theme);
                         chart.setOption(result.chart);
+                        // 追踪图表实例以便主题切换时更新
+                        chartInstances.push({ chart, container });
                         // 响应式调整
                         const resizeObserver = new ResizeObserver(() => chart.resize());
                         resizeObserver.observe(container);

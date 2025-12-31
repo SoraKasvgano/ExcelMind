@@ -543,6 +543,7 @@ def generate_chart(
     chart_type: Optional[str] = None,
     x_column: Optional[str] = None,
     y_column: Optional[str] = None,
+    agg_column: Optional[str] = None,  # y_column 的别名，用于饼图等分组聚合场景
     group_by: Optional[str] = None,
     agg_func: str = "sum",
     title: str = "",
@@ -558,6 +559,7 @@ def generate_chart(
                    为空或"auto"时自动推荐。
         x_column: X轴数据列名（分类轴）
         y_column: Y轴数据列名（数值轴，单系列时使用）
+        agg_column: 聚合列名（y_column 的别名，用于饼图等场景）
         group_by: 分组列名（用于饼图和多系列图）
         agg_func: 聚合函数: sum, mean, count, min, max
         title: 图表标题
@@ -568,6 +570,10 @@ def generate_chart(
     Returns:
         包含 ECharts 配置的字典 {"chart": {...}, "message": "..."}
     """
+    # 处理 agg_column 作为 y_column 的别名
+    if agg_column and not y_column:
+        y_column = agg_column
+    
     loader = get_loader()
     df = loader.dataframe.copy()
     
